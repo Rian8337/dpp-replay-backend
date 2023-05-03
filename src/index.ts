@@ -14,7 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.post("/", (req, res) => {
-    console.log(req.body);
+    //@ts-expect-error bye
+    console.dir(req.files, { depth: null });
     res.send("i love php");
 });
 
