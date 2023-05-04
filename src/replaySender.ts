@@ -34,6 +34,7 @@ export async function sendReplay(
     }
 
     const formData = new FormData();
+    formData.append("filename", filename);
     formData.append("replayID", replay.scoreID.toString());
     formData.append("replayfile", new Blob([replay.originalODR]), filename);
 
