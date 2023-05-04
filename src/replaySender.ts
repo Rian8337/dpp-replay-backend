@@ -34,9 +34,8 @@ export async function sendReplay(
     }
 
     const formData = new FormData();
-    formData.append("filename", filename);
     formData.append("replayID", replay.scoreID.toString());
-    formData.append("replayfile", replay.originalODR.toString("base64url"));
+    formData.append("replayfile", new Blob([replay.originalODR]), filename);
 
     const success = await fetch("http://127.0.0.1:3006/forward-replay", {
         method: "POST",
