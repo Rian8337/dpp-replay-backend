@@ -6,6 +6,9 @@ import { sendReplay, startResendCycle } from "./replaySender";
 import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
 import { replayDirectory, saveReplay } from "./replaySavingManager";
 import { Player } from "@rian8337/osu-droid-utilities";
+import { config } from "dotenv";
+
+config();
 
 const app = express();
 
