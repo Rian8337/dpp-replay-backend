@@ -71,7 +71,7 @@ app.post<
     }
 
     // Send the replay to the processing backend.
-    sendReplay(replayFilename, replayAnalyzer);
+    // sendReplay(replayFilename, replayAnalyzer);
 });
 
 const port = parseInt(process.env.PORT || "3005");
