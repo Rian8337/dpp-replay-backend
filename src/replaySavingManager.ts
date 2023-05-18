@@ -26,10 +26,10 @@ export async function saveReplay(
     // Rename incremental IDs
     let filename = `${playerId}_${data.hash}_${
         data.convertedMods.map((v) => v.droidString) || "-"
-    }_${data.speedModification}x`;
+    }_${data.speedModification}x_`;
 
     if (data.forcedAR !== undefined) {
-        filename += `_AR${data.forcedAR}`;
+        filename += `AR${data.forcedAR}_`;
     }
 
     for (let i = 4; i > 0; --i) {
@@ -43,7 +43,7 @@ export async function saveReplay(
         await copyFile(name + i + ".odr", name + (i + 1) + ".odr");
     }
 
-    filename += "_1.odr";
+    filename += "1.odr";
     const success = await writeFile(filename, originalODR)
         .then(() => true)
         .catch(() => false);
