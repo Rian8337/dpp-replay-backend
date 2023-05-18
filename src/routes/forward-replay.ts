@@ -16,46 +16,44 @@ function readFile(stream: ReadStream): Promise<Buffer> {
     });
 }
 
-router.post<
-    "/forward-replay",
-    unknown,
-    unknown,
-    { replayID: string; hash: string }
->("/forward-replay", async (req, res) => {
-    res.send("Success");
+router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
+    "/",
+    async (req, res) => {
+        res.send("Success");
 
-    // @ts-expect-error: Bad typings
-    if (Object.keys(req.files).length === 0) {
-        return;
+        // @ts-expect-error: Bad typings
+        if (Object.keys(req.files).length === 0) {
+            return;
+        }
+
+        // @ts-expect-error: Bad typings
+        const fileStream: ReadStream = req.files.uploadedfile;
+
+        const replayAnalyzer = new ReplayAnalyzer({
+            scoreID: parseInt(req.body.replayID),
+        });
+        replayAnalyzer.originalODR = await readFile(fileStream);
+        await replayAnalyzer.analyze();
+
+        const { data } = replayAnalyzer;
+        if (!data) {
+            return;
+        }
+
+        const player = await Player.getInformation(data.playerName);
+        if (!player) {
+            return;
+        }
+
+        // Save replay file to disk.
+        const replayFilename = await saveReplay(player.uid, replayAnalyzer);
+        if (!replayFilename) {
+            return;
+        }
+
+        // Send the replay to the processing backend.
+        // sendReplay(replayFilename, replayAnalyzer);
     }
-
-    // @ts-expect-error: Bad typings
-    const fileStream: ReadStream = req.files.uploadedfile;
-
-    const replayAnalyzer = new ReplayAnalyzer({
-        scoreID: parseInt(req.body.replayID),
-    });
-    replayAnalyzer.originalODR = await readFile(fileStream);
-    await replayAnalyzer.analyze();
-
-    const { data } = replayAnalyzer;
-    if (!data) {
-        return;
-    }
-
-    const player = await Player.getInformation(data.playerName);
-    if (!player) {
-        return;
-    }
-
-    // Save replay file to disk.
-    const replayFilename = await saveReplay(player.uid, replayAnalyzer);
-    if (!replayFilename) {
-        return;
-    }
-
-    // Send the replay to the processing backend.
-    // sendReplay(replayFilename, replayAnalyzer);
-});
+);
 
 export default router;
