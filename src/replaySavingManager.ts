@@ -44,7 +44,10 @@ export async function saveReplay(
     }
 
     filename += "1.odr";
-    const success = await writeFile(filename, originalODR)
+    const success = await writeFile(
+        join(replayDirectory, filename),
+        originalODR
+    )
         .then(() => true)
         .catch(() => false);
 
