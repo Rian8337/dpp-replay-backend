@@ -3,6 +3,7 @@ import { ReadStream } from "fs";
 import { saveReplay } from "../replaySavingManager";
 import { Player } from "@rian8337/osu-droid-utilities";
 import { Router } from "express";
+import { sendReplay } from "../replaySender";
 
 const router = Router();
 
@@ -40,7 +41,7 @@ router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
             return;
         }
 
-        const player = await Player.getInformation(data.playerName);
+        const player = await Player.getInformation("Rian8337");
         if (!player) {
             return;
         }
@@ -52,7 +53,7 @@ router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
         }
 
         // Send the replay to the processing backend.
-        // sendReplay(replayFilename, replayAnalyzer);
+        sendReplay(replayFilename, replayAnalyzer);
     }
 );
 
