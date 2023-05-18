@@ -1,7 +1,4 @@
-import {
-    ReplayAnalyzer,
-    ReplayData,
-} from "@rian8337/osu-droid-replay-analyzer";
+import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
 import { readFile, copyFile, writeFile } from "fs/promises";
 import { join } from "path";
 
@@ -29,7 +26,11 @@ export async function saveReplay(
     // Rename incremental IDs
     let filename = `${playerId}_${data.hash}_${
         data.convertedMods.map((v) => v.droidString) || "-"
-    }_`;
+    }_${data.speedModification}x`;
+
+    if (data.forcedAR !== undefined) {
+        filename += `_AR${data.forcedAR}`;
+    }
 
     for (let i = 4; i > 0; --i) {
         const name = join(replayDirectory, filename);
