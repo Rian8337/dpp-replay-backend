@@ -26,7 +26,11 @@ export async function saveReplay(
     // Rename incremental IDs
     let filename = `${playerId}_${data.hash}_${
         data.convertedMods.map((v) => v.droidString) || "-"
-    }_${data.speedModification}x_`;
+    }_`;
+
+    if (data.speedModification !== 1) {
+        filename += `${data.speedModification}x_`;
+    }
 
     if (data.forcedAR !== undefined) {
         filename += `AR${data.forcedAR}_`;
