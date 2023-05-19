@@ -6,6 +6,7 @@ import { startResendCycle } from "./replaySender";
 import { replayDirectory } from "./replaySavingManager";
 import { config } from "dotenv";
 import forwardReplay from "./routes/forward-replay";
+import persistReplay from "./routes/persist-replay";
 
 config();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/forward-replay", forwardReplay);
+app.use("/persist-replay", persistReplay);
 
 try {
     mkdirSync(replayDirectory);

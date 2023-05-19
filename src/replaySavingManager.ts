@@ -57,3 +57,27 @@ export async function saveReplay(
 
     return success ? filename : null;
 }
+
+/**
+ * Persists a replay file.
+ *
+ * This removes the incremental IDs in the replay file name
+ * and appends it with `_persisted.odr`.
+ *
+ * @param replayFilename The name of the replay file.
+ * @returns Whether the operation was successful.
+ */
+export async function persistReplay(replayFilename: string): Promise<boolean> {
+    const filenameSections = replayFilename.split("_");
+    filenameSections.pop();
+    filenameSections.push("persisted.odr");
+
+    const success = await copyFile(
+        join(replayDirectory, replayFilename),
+        join(replayDirectory, filenameSections.join("_"))
+    )
+        .then(() => true)
+        .catch(() => false);
+
+    return success;
+}
