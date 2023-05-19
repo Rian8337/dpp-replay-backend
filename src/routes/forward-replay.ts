@@ -41,7 +41,7 @@ router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
             return;
         }
 
-        const player = await Player.getInformation("Rian8337");
+        const player = await Player.getInformation(data.playerName);
         if (!player) {
             return;
         }
