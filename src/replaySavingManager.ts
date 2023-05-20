@@ -12,7 +12,7 @@ export const replayDirectory = join(process.cwd(), "replays");
  *
  * @param filename The name of the replay file.
  * @param replayFile The replay file.
- * @returns The name the replay file was saved in if the operation is successful, or `null`.
+ * @returns The name the replay file was saved in if the operation is successful, `null` otherwise.
  */
 export async function saveReplay(
     playerId: number,
