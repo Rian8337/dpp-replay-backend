@@ -1,11 +1,23 @@
+import { IModApplicableToDroid, Mod, ModUtil } from "@rian8337/osu-base";
 import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
 import { readFile, copyFile, writeFile } from "fs/promises";
+import { homedir } from "os";
 import { join } from "path";
 
 /**
- * The directory of replays.
+ * The directory of local replays.
  */
-export const replayDirectory = join(process.cwd(), "replays");
+export const localReplayDirectory = join(process.cwd(), "replays");
+
+const onlineReplayDirectory = join(
+    homedir(),
+    "..",
+    "..",
+    "DroidData",
+    "osudroid",
+    "zip",
+    "upload"
+);
 
 /**
  * Saves a replay to the disk.
@@ -24,32 +36,28 @@ export async function saveReplay(
     }
 
     // Rename incremental IDs
-    let filename = `${playerId}_${data.hash}_${
-        data.convertedMods.map((v) => v.droidString) || "-"
-    }_`;
-
-    if (data.speedModification !== 1) {
-        filename += `${data.speedModification}x_`;
-    }
-
-    if (data.forcedAR !== undefined) {
-        filename += `AR${data.forcedAR}_`;
-    }
+    let filename = generateBaseReplayFilename(
+        playerId,
+        data.hash,
+        data.convertedMods,
+        data.speedModification,
+        data.forcedAR
+    );
 
     for (let i = 4; i > 0; --i) {
-        const name = join(replayDirectory, filename);
-        const file = await readFile(name + i + ".odr").catch(() => null);
+        const name = join(localReplayDirectory, filename);
+        const file = await readFile(name + "_" + i + ".odr").catch(() => null);
 
         if (!file) {
             continue;
         }
 
-        await copyFile(name + i + ".odr", name + (i + 1) + ".odr");
+        await copyFile(name + "_" + i + ".odr", name + "_" + (i + 1) + ".odr");
     }
 
-    filename += "1.odr";
+    filename += "_1.odr";
     const success = await writeFile(
-        join(replayDirectory, filename),
+        join(localReplayDirectory, filename),
         originalODR
     )
         .then(() => true)
@@ -59,7 +67,43 @@ export async function saveReplay(
 }
 
 /**
- * Persists a replay file.
+ * Generates a filename for a replay.
+ *
+ * @param playerId The ID of the player.
+ * @param mapMD5 The MD5 hash of the beatmap.
+ * @param mods The mods of the replay, either in array of mods or droid string.
+ * @param speedModification The speed modification used in the replay.
+ * @param forcedAR The force AR value used in the replay.
+ * @returns The name of the replay file, without the `.odr` extension.
+ */
+export function generateBaseReplayFilename(
+    playerId: number,
+    mapMD5: string,
+    mods: (Mod & IModApplicableToDroid)[] | string,
+    speedModification: number = 1,
+    forcedAR?: number
+) {
+    if (typeof mods === "string") {
+        mods = ModUtil.droidStringToMods(mods);
+    }
+
+    let filename = `${playerId}_${mapMD5}_${
+        mods.map((v) => v.droidString) || "-"
+    }`;
+
+    if (speedModification !== 1) {
+        filename += `_${speedModification}x`;
+    }
+
+    if (forcedAR !== undefined) {
+        filename += `_AR${forcedAR}`;
+    }
+
+    return filename;
+}
+
+/**
+ * Persists a local replay file.
  *
  * This removes the incremental IDs in the replay file name
  * and appends it with `_persisted.odr`.
@@ -67,17 +111,55 @@ export async function saveReplay(
  * @param replayFilename The name of the replay file.
  * @returns Whether the operation was successful.
  */
-export async function persistReplay(replayFilename: string): Promise<boolean> {
+export async function persistLocalReplay(
+    replayFilename: string
+): Promise<boolean> {
     const filenameSections = replayFilename.split("_");
     filenameSections.pop();
     filenameSections.push("persisted.odr");
 
-    const success = await copyFile(
-        join(replayDirectory, replayFilename),
-        join(replayDirectory, filenameSections.join("_"))
+    return copyFile(
+        join(localReplayDirectory, replayFilename),
+        join(localReplayDirectory, filenameSections.join("_"))
     )
         .then(() => true)
         .catch(() => false);
+}
 
-    return success;
+/**
+ * Persists an online replay file.
+ *
+ * @param playerId The ID of the player.
+ * @param scoreId The ID of the score.
+ */
+export async function persistOnlineReplay(
+    playerId: number,
+    scoreId: number
+): Promise<boolean> {
+    const onlineReplayPath = join(onlineReplayDirectory, `${scoreId}.odr`);
+    const analyzer = new ReplayAnalyzer({ scoreID: scoreId });
+    analyzer.originalODR = await readFile(onlineReplayPath).catch(() => null);
+
+    if (!analyzer.originalODR) {
+        return false;
+    }
+
+    await analyzer.analyze();
+    const { data } = analyzer;
+    if (!data) {
+        return false;
+    }
+
+    const filename =
+        generateBaseReplayFilename(
+            playerId,
+            data.hash,
+            data.convertedMods,
+            data.speedModification,
+            data.forcedAR
+        ) + "_persisted.odr";
+
+    return writeFile(join(localReplayDirectory, filename), analyzer.originalODR)
+        .then(() => true)
+        .catch(() => false);
 }

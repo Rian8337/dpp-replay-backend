@@ -3,11 +3,12 @@ import cors from "cors";
 import formData from "express-form-data";
 import { mkdirSync } from "fs";
 import { startResendCycle } from "./replaySender";
-import { replayDirectory } from "./replaySavingManager";
+import { localReplayDirectory } from "./replaySavingManager";
 import { config } from "dotenv";
 import getReplay from "./routes/get-replay";
 import forwardReplay from "./routes/forward-replay";
-import persistReplay from "./routes/persist-replay";
+import persistLocalReplay from "./routes/persist-local-replay";
+import persistOnlineReplay from "./routes/persist-online-replay";
 
 config();
 
@@ -24,10 +25,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/get-replay", getReplay);
 app.use("/forward-replay", forwardReplay);
-app.use("/persist-replay", persistReplay);
+app.use("/persist-local-replay", persistLocalReplay);
+app.use("/persist-online-replay", persistOnlineReplay);
 
 try {
-    mkdirSync(replayDirectory);
+    mkdirSync(localReplayDirectory);
 } catch {}
 
 const port = parseInt(process.env.PORT || "3005");
