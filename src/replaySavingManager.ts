@@ -87,7 +87,7 @@ export function generateBaseReplayFilename(
     forcedAR?: number
 ) {
     let filename = `${playerId}_${mapMD5}_${
-        mods.map((v) => v.droidString) || "-"
+        mods.reduce((a, v) => a + v.droidString, "") || "-"
     }`;
 
     if (speedModification !== 1) {
