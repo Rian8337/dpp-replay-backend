@@ -79,14 +79,10 @@ export async function saveReplay(
 export function generateBaseReplayFilename(
     playerId: number,
     mapMD5: string,
-    mods: (Mod & IModApplicableToDroid)[] | string,
+    mods: (Mod & IModApplicableToDroid)[],
     speedModification: number = 1,
     forcedAR?: number
 ) {
-    if (typeof mods === "string") {
-        mods = ModUtil.droidStringToMods(mods);
-    }
-
     let filename = `${playerId}_${mapMD5}_${
         mods.map((v) => v.droidString) || "-"
     }`;
