@@ -1,4 +1,4 @@
-import { IModApplicableToDroid, Mod, ModUtil } from "@rian8337/osu-base";
+import { IModApplicableToDroid, Mod } from "@rian8337/osu-base";
 import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
 import { readFile, copyFile, writeFile } from "fs/promises";
 import { homedir } from "os";
