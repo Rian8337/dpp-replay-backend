@@ -9,7 +9,10 @@ import { join } from "path";
  */
 export const localReplayDirectory = join(process.cwd(), "replays");
 
-const onlineReplayDirectory = join(
+/**
+ * The directory of online replays.
+ */
+export const onlineReplayDirectory = join(
     homedir(),
     "..",
     "..",
