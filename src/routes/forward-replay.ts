@@ -53,7 +53,7 @@ router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
         }
 
         // Send the replay to the processing backend.
-        await sendReplay(replayFilename, replayAnalyzer);
+        await sendReplay(replayFilename, replayAnalyzer).catch(() => null);
     }
 );
 
