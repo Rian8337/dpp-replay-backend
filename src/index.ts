@@ -10,6 +10,7 @@ import getOnlineReplay from "./routes/get-online-replay";
 import forwardReplay from "./routes/forward-replay";
 import persistLocalReplay from "./routes/persist-local-replay";
 import persistOnlineReplay from "./routes/persist-online-replay";
+import saveLocalReplay from "./routes/save-local-replay";
 
 config();
 
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/get-local-replay", getLocalReplay);
 app.use("/get-online-replay", getOnlineReplay);
 app.use("/forward-replay", forwardReplay);
+app.use("/save-local-replay", saveLocalReplay);
 app.use("/persist-local-replay", persistLocalReplay);
 app.use("/persist-online-replay", persistOnlineReplay);
 

@@ -1,5 +1,6 @@
 import { IModApplicableToDroid, Mod } from "@rian8337/osu-base";
 import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
+import { ReadStream } from "fs";
 import { readFile, copyFile, writeFile } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
@@ -25,7 +26,7 @@ export const onlineReplayDirectory = join(
 /**
  * Saves a replay to the disk.
  *
- * @param filename The name of the replay file.
+ * @param playerId The ID of the player.
  * @param replayFile The replay file.
  * @returns The name the replay file was saved in if the operation is successful, `null` otherwise.
  */
@@ -39,7 +40,7 @@ export async function saveReplay(
     }
 
     // Rename incremental IDs
-    let filename = generateBaseReplayFilename(
+    let filePath = generateReplayFilePath(
         playerId,
         data.hash,
         data.convertedMods,
@@ -48,7 +49,7 @@ export async function saveReplay(
     );
 
     for (let i = 4; i > 0; --i) {
-        const name = join(localReplayDirectory, filename);
+        const name = join(localReplayDirectory, filePath);
         const file = await readFile(name + "_" + i + ".odr").catch(() => null);
 
         if (!file) {
@@ -58,47 +59,44 @@ export async function saveReplay(
         await copyFile(name + "_" + i + ".odr", name + "_" + (i + 1) + ".odr");
     }
 
-    filename += "_1.odr";
-    const success = await writeFile(
-        join(localReplayDirectory, filename),
-        originalODR
-    )
-        .then(() => true)
-        .catch(() => false);
-
-    return success ? filename : null;
+    filePath += "_1.odr";
+    return writeFile(join(localReplayDirectory, filePath), originalODR)
+        .then(() => filePath.split("/").at(-1)!)
+        .catch(() => null);
 }
 
 /**
- * Generates a filename for a replay.
+ * Generates a path for a replay.
  *
  * @param playerId The ID of the player.
  * @param mapMD5 The MD5 hash of the beatmap.
  * @param mods The mods of the replay, either in array of mods or droid string.
  * @param speedModification The speed modification used in the replay.
  * @param forcedAR The force AR value used in the replay.
- * @returns The name of the replay file, without the `.odr` extension.
+ * @returns The path to the replay file, without the `.odr` extension.
  */
-export function generateBaseReplayFilename(
+export function generateReplayFilePath(
     playerId: number,
     mapMD5: string,
     mods: (Mod & IModApplicableToDroid)[],
     speedModification: number = 1,
     forcedAR?: number
 ) {
-    let filename = `${playerId}_${mapMD5}_${
-        mods.reduce((a, v) => a + v.droidString, "") || "-"
-    }`;
+    let filePath = join(
+        playerId.toString(),
+        mapMD5,
+        `${mods.reduce((a, v) => a + v.droidString, "") || "-"}`
+    );
 
     if (speedModification !== 1) {
-        filename += `_${speedModification}x`;
+        filePath += `_${speedModification}x`;
     }
 
     if (forcedAR !== undefined) {
-        filename += `_AR${forcedAR}`;
+        filePath += `_AR${forcedAR}`;
     }
 
-    return filename;
+    return filePath;
 }
 
 /**
@@ -149,8 +147,8 @@ export async function persistOnlineReplay(
         return false;
     }
 
-    const filename =
-        generateBaseReplayFilename(
+    const filePath =
+        generateReplayFilePath(
             playerId,
             data.hash,
             data.convertedMods,
@@ -158,7 +156,23 @@ export async function persistOnlineReplay(
             data.forcedAR
         ) + "_persisted.odr";
 
-    return writeFile(join(localReplayDirectory, filename), analyzer.originalODR)
+    return writeFile(join(localReplayDirectory, filePath), analyzer.originalODR)
         .then(() => true)
         .catch(() => false);
+}
+
+/**
+ * Reads a file stream and returns it as a buffer.
+ *
+ * @param stream The stream to read.
+ * @returns The buffer represented by the read stream.
+ */
+export function readFileStream(stream: ReadStream): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+
+    return new Promise((resolve, reject) => {
+        stream.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+        stream.on("error", (err) => reject(err));
+        stream.on("end", () => resolve(Buffer.concat(chunks)));
+    });
 }

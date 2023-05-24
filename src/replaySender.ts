@@ -1,18 +1,18 @@
 import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
 
 /**
- * A map that contains replays that failed to submit to the processing backend, mapped by their filename.
+ * A set that contains replays that failed to submit to the processing backend.
  */
-export const failedReplaySubmissions = new Map<string, ReplayAnalyzer>();
+export const failedReplaySubmissions = new Set<ReplayAnalyzer>();
 
 /**
  * Starts the interval to resend failed replay submissions.
  */
 export function startResendCycle() {
     setInterval(async () => {
-        for (const [replayFilename, replay] of failedReplaySubmissions) {
-            if (await sendReplay(replayFilename, replay)) {
-                failedReplaySubmissions.delete(replayFilename);
+        for (const replay of failedReplaySubmissions) {
+            if (await sendReplay(replay)) {
+                failedReplaySubmissions.delete(replay);
             }
         }
     }, 60 * 5 * 1000);
@@ -25,19 +25,15 @@ export function startResendCycle() {
  * @param replay The replay to be sent.
  * @returns Whether the request was successful.
  */
-export async function sendReplay(
-    filename: string,
-    replay: ReplayAnalyzer
-): Promise<boolean> {
+export async function sendReplay(replay: ReplayAnalyzer): Promise<boolean> {
     if (!replay.originalODR) {
         return false;
     }
 
     const formData = new FormData();
-    formData.append("filename", filename);
     formData.append("replayID", replay.scoreID.toString());
     formData.append("key", process.env.DROID_SERVER_INTERNAL_KEY!);
-    formData.append("replayfile", new Blob([replay.originalODR]), filename);
+    formData.append("replayfile", new Blob([replay.originalODR]));
 
     const success = await fetch("http://127.0.0.1:3006/forward-replay", {
         method: "POST",
@@ -47,7 +43,7 @@ export async function sendReplay(
         .catch(() => false);
 
     if (!success) {
-        failedReplaySubmissions.set(filename, replay);
+        failedReplaySubmissions.add(replay);
     }
 
     return success;
