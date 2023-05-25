@@ -4,7 +4,6 @@ import formData from "express-form-data";
 import { startResendCycle } from "./replaySender";
 import { config } from "dotenv";
 import getLocalReplay from "./routes/get-local-replay";
-import getOnlineReplay from "./routes/get-online-replay";
 import forwardReplay from "./routes/forward-replay";
 import persistLocalReplay from "./routes/persist-local-replay";
 import persistOnlineReplay from "./routes/persist-online-replay";
@@ -24,7 +23,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/get-local-replay", getLocalReplay);
-app.use("/get-online-replay", getOnlineReplay);
 app.use("/forward-replay", forwardReplay);
 app.use("/save-local-replay", saveLocalReplay);
 app.use("/persist-local-replay", persistLocalReplay);
