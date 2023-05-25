@@ -105,19 +105,17 @@ export function generateReplayFilePath(
  * This removes the incremental IDs in the replay file name
  * and appends it with `_persisted.odr`.
  *
- * @param replayFilename The name of the replay file.
+ * @param replayPath The path to the replay file.
  * @returns Whether the operation was successful.
  */
-export async function persistLocalReplay(
-    replayFilename: string
-): Promise<boolean> {
-    const filenameSections = replayFilename.split("_");
-    filenameSections.pop();
-    filenameSections.push("persisted.odr");
+export async function persistLocalReplay(replayPath: string): Promise<boolean> {
+    const filePathSections = replayPath.split("_");
+    filePathSections.pop();
+    filePathSections.push("persisted.odr");
 
     return copyFile(
-        join(localReplayDirectory, replayFilename),
-        join(localReplayDirectory, filenameSections.join("_"))
+        join(localReplayDirectory, replayPath),
+        join(localReplayDirectory, filePathSections.join("_"))
     )
         .then(() => true)
         .catch(() => false);
