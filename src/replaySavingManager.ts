@@ -1,7 +1,7 @@
 import { IModApplicableToDroid, Mod } from "@rian8337/osu-base";
 import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
 import { ReadStream } from "fs";
-import { readFile, copyFile, writeFile } from "fs/promises";
+import { readFile, copyFile, writeFile, mkdir } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
 
@@ -60,7 +60,11 @@ export async function saveReplay(
     }
 
     filePath += "_1.odr";
-    return writeFile(join(localReplayDirectory, filePath), originalODR)
+
+    return ensureBeatmapDirectoryExists(filePath)
+        .then(() =>
+            writeFile(join(localReplayDirectory, filePath), originalODR)
+        )
         .then(() => filePath)
         .catch(() => null);
 }
@@ -113,10 +117,13 @@ export async function persistLocalReplay(replayPath: string): Promise<boolean> {
     filePathSections.pop();
     filePathSections.push("persisted.odr");
 
-    return copyFile(
-        join(localReplayDirectory, replayPath),
-        join(localReplayDirectory, filePathSections.join("_"))
-    )
+    return ensureBeatmapDirectoryExists(replayPath)
+        .then(() =>
+            copyFile(
+                join(localReplayDirectory, replayPath),
+                join(localReplayDirectory, filePathSections.join("_"))
+            )
+        )
         .then(() => true)
         .catch(() => false);
 }
@@ -154,7 +161,13 @@ export async function persistOnlineReplay(
             data.forcedAR
         ) + "_persisted.odr";
 
-    return writeFile(join(localReplayDirectory, filePath), analyzer.originalODR)
+    return ensureBeatmapDirectoryExists(filePath)
+        .then(() =>
+            writeFile(
+                join(localReplayDirectory, filePath),
+                analyzer.originalODR!
+            )
+        )
         .then(() => true)
         .catch(() => false);
 }
@@ -172,5 +185,22 @@ export function readFileStream(stream: ReadStream): Promise<Buffer> {
         stream.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
         stream.on("error", (err) => reject(err));
         stream.on("end", () => resolve(Buffer.concat(chunks)));
+    });
+}
+
+/**
+ * Ensures the beatmap directory for a replay exists.
+ *
+ * @param filePath The path to the replay file.
+ * @returns The created path from `mkdir`.
+ */
+function ensureBeatmapDirectoryExists(
+    filePath: string
+): Promise<string | undefined> {
+    const beatmapDirectory = filePath.split("/");
+    beatmapDirectory.pop();
+
+    return mkdir(join(localReplayDirectory, ...beatmapDirectory), {
+        recursive: true,
     });
 }
