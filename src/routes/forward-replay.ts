@@ -10,7 +10,7 @@ const router = Router();
 router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
     "/",
     async (req, res) => {
-        res.send("Success");
+        res.sendStatus(200);
 
         // @ts-expect-error: Bad typings
         if (Object.keys(req.files).length === 0) {
