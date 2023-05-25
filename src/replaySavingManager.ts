@@ -28,7 +28,7 @@ export const onlineReplayDirectory = join(
  *
  * @param playerId The ID of the player.
  * @param replayFile The replay file.
- * @returns The name the replay file was saved in if the operation is successful, `null` otherwise.
+ * @returns The path to replay file was saved in if the operation is successful, `null` otherwise.
  */
 export async function saveReplay(
     playerId: number,
@@ -61,7 +61,7 @@ export async function saveReplay(
 
     filePath += "_1.odr";
     return writeFile(join(localReplayDirectory, filePath), originalODR)
-        .then(() => filePath.split("/").at(-1)!)
+        .then(() => filePath)
         .catch(() => null);
 }
 
