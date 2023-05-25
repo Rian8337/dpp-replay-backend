@@ -5,18 +5,18 @@ import { readFile, copyFile, writeFile } from "fs/promises";
 import { homedir } from "os";
 import { join } from "path";
 
+const mainDirectory = join(homedir(), "..", "..");
+
 /**
  * The directory of local replays.
  */
-export const localReplayDirectory = join(process.cwd(), "replays");
+export const localReplayDirectory = join(mainDirectory, "data", "dpp-replays");
 
 /**
  * The directory of online replays.
  */
 export const onlineReplayDirectory = join(
-    homedir(),
-    "..",
-    "..",
+    mainDirectory,
     "DroidData",
     "osudroid",
     "zip",

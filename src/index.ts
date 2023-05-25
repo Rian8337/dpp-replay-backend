@@ -1,9 +1,7 @@
 import express from "express";
 import cors from "cors";
 import formData from "express-form-data";
-import { mkdirSync } from "fs";
 import { startResendCycle } from "./replaySender";
-import { localReplayDirectory } from "./replaySavingManager";
 import { config } from "dotenv";
 import getLocalReplay from "./routes/get-local-replay";
 import getOnlineReplay from "./routes/get-online-replay";
@@ -31,10 +29,6 @@ app.use("/forward-replay", forwardReplay);
 app.use("/save-local-replay", saveLocalReplay);
 app.use("/persist-local-replay", persistLocalReplay);
 app.use("/persist-online-replay", persistOnlineReplay);
-
-try {
-    mkdirSync(localReplayDirectory);
-} catch {}
 
 const port = parseInt(process.env.PORT || "3005");
 app.listen(port, () => {
