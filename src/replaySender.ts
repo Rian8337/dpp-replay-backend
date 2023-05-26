@@ -35,11 +35,14 @@ export async function sendReplay(replay: ReplayAnalyzer): Promise<boolean> {
     formData.append("key", process.env.DROID_SERVER_INTERNAL_KEY!);
     formData.append("replayfile", new Blob([replay.originalODR]));
 
-    const success = await fetch("http://127.0.0.1:3006/forward-replay", {
-        method: "POST",
-        body: formData,
-    })
-        .then(() => true)
+    const success = await fetch(
+        "http://127.0.0.1:3006/api/dpp/processor/forward-replay",
+        {
+            method: "POST",
+            body: formData,
+        }
+    )
+        .then((res) => res.status === 200)
         .catch(() => false);
 
     if (!success) {
