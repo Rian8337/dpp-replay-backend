@@ -32,7 +32,7 @@ export function saveReplay(replay: ReplayAnalyzer): Promise<string | null> {
     const filename = `${data.playerName}_${data.hash}_${Date.now()}.odr`;
 
     return mkdir(replayDirectory, { recursive: true })
-        .then(() => writeFile(filename, originalODR))
+        .then(() => writeFile(join(replayDirectory, filename), originalODR))
         .then(() => filename)
         .catch(() => null);
 }
