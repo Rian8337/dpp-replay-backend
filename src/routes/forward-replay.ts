@@ -1,9 +1,8 @@
 import { ReplayAnalyzer } from "@rian8337/osu-droid-replay-analyzer";
 import { ReadStream } from "fs";
-import { Player } from "@rian8337/osu-droid-utilities";
 import { Router } from "express";
 import { sendReplay } from "../replaySender";
-import { readFileStream } from "../replaySavingManager";
+import { readFileStream, saveReplay } from "../replaySavingManager";
 
 const router = Router();
 
@@ -26,18 +25,13 @@ router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
         replayAnalyzer.originalODR = await readFileStream(fileStream);
         await replayAnalyzer.analyze();
 
-        const { data } = replayAnalyzer;
-        if (!data) {
-            return;
-        }
-
-        const player = await Player.getInformation(data.playerName);
-        if (!player) {
+        const filename = await saveReplay(replayAnalyzer);
+        if (!filename) {
             return;
         }
 
         // Send the replay to the processing backend.
-        await sendReplay(replayAnalyzer).catch(() => null);
+        await sendReplay(req.body.replayID, filename).catch(() => null);
     }
 );
 
