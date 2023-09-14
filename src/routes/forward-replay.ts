@@ -23,7 +23,7 @@ router.post<"/", unknown, unknown, { replayID: string; hash: string }>(
             scoreID: parseInt(req.body.replayID),
         });
         replayAnalyzer.originalODR = await readFileStream(fileStream);
-        await replayAnalyzer.analyze();
+        await replayAnalyzer.analyze().catch(() => {});
 
         const filename = await saveReplay(replayAnalyzer);
         if (!filename) {
