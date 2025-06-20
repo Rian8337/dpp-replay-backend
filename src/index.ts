@@ -5,20 +5,12 @@ import { config } from "dotenv";
 import { createHash } from "crypto";
 import { ReadStream } from "fs";
 import { mkdir, writeFile } from "fs/promises";
-import { homedir } from "os";
 import { join } from "path";
 
 config();
 
 const app = express();
-const replayDirectory = join(
-    homedir(),
-    "..",
-    "..",
-    "data",
-    "dpp-replays",
-    "unprocessed"
-);
+const replayDirectory = join(process.cwd(), "..", "replays", "unprocessed");
 
 app.set("trust proxy", 1);
 
