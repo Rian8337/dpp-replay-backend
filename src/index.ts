@@ -39,15 +39,15 @@ app.post<
 
     // @ts-expect-error: Bad typings
     const fileStream: ReadStream = req.files.uploadedfile;
-    const file: (string | Buffer)[] = [];
+    const chunks: Buffer[] = [];
 
     fileStream
-        .on("data", (chunk) => {
-            fileHash.update(chunk);
-            file.push(chunk);
+        .on("data", (chunk: Buffer) => {
+            fileHash.update(chunk.toString("binary"), "binary");
+            chunks.push(chunk);
         })
         .on("error", (err) =>
-            console.error("Error when consuming replay stream:", err)
+            console.error("Error when consuming replay stream:", err),
         )
         .on("end", async () => {
             const filename =
@@ -55,9 +55,14 @@ app.post<
                 `${fileHash.digest("hex")}.odr`;
 
             await mkdir(replayDirectory, { recursive: true })
-                .then(() => writeFile(join(replayDirectory, filename), file))
+                .then(() =>
+                    writeFile(
+                        join(replayDirectory, filename),
+                        new Uint8Array(Buffer.concat(chunks as unknown as Uint8Array[])),
+                    ),
+                )
                 .catch((e) =>
-                    console.error("Error when saving replay file:", e)
+                    console.error("Error when saving replay file:", e),
                 );
         });
 });
