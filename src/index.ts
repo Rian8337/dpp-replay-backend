@@ -42,9 +42,10 @@ app.post<
     const chunks: Buffer[] = [];
 
     fileStream
-        .on("data", (chunk: Buffer) => {
-            fileHash.update(chunk.toString("binary"), "binary");
-            chunks.push(chunk);
+        .on("data", (chunk: string | Buffer) => {
+            const buf = typeof chunk === "string" ? Buffer.from(chunk, "binary") : chunk;
+            fileHash.update(buf.toString("binary"), "binary");
+            chunks.push(buf);
         })
         .on("error", (err) =>
             console.error("Error when consuming replay stream:", err),
